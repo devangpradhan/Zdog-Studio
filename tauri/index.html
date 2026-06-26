@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=device-width, initial-scale=1.0">
+  <title>Zdog Studio - Premium 3D Editor</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="/lib/lucide.min.js"></script>
+  <!-- Zdog CDN -->
+  <script src="/lib/zdog.dist.min.js"></script>
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="editor-container">
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar-left">
+      <!-- User Profile Card -->
+      <div class="workspace-header">
+        <div class="profile-avatar">
+          <canvas id="logo-canvas" width="32" height="32" class="avatar-canvas"></canvas>
+        </div>
+        <div class="workspace-info">
+          <h3>Zdog Studio</h3>
+          <p>Editor Workspace</p>
+        </div>
+        <button id="btn-theme-toggle" class="settings-btn" title="Toggle Light/Dark Theme">
+          <i data-lucide="sun" id="theme-toggle-icon"></i>
+        </button>
+      </div>
+
+      <!-- New Project Action -->
+      <div class="new-project-section" style="padding: 14px 20px; border-bottom: 1px solid var(--border-color);">
+        <button id="btn-new-project" class="action-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; padding: 10px 14px; background: var(--accent-orange); color: white; border: none; border-radius: 8px; cursor: pointer; transition: var(--transition); font-size: 0.8rem; box-shadow: 0 4px 10px rgba(255, 92, 0, 0.2);">
+          <i data-lucide="file-plus"></i> New Project
+        </button>
+      </div>
+
+      <!-- Sample Selection Tabs (Spline style) -->
+      <div class="panel-section samples-section">
+        <div class="panel-section-header">
+          <span>Samples</span>
+          <i data-lucide="chevron-down"></i>
+        </div>
+        <ul class="samples-list">
+          <li class="sample-item active" data-preset="zdog">
+            <span class="dot purple"></span>
+            <span class="sample-name">Zdog Mascot</span>
+            <span class="shortcut">⌘+1</span>
+          </li>
+          <li class="sample-item" data-preset="solar">
+            <span class="dot red"></span>
+            <span class="sample-name">Solar System</span>
+            <span class="shortcut">⌘+2</span>
+          </li>
+          <li class="sample-item" data-preset="robot">
+            <span class="dot orange"></span>
+            <span class="sample-name">Toy Robot</span>
+            <span class="shortcut">⌘+3</span>
+          </li>
+          <li class="sample-item" data-preset="gyro">
+            <span class="dot yellow"></span>
+            <span class="sample-name">Gyroscope</span>
+            <span class="shortcut">⌘+4</span>
+          </li>
+          <li class="sample-item" data-preset="cyber">
+            <span class="dot green"></span>
+            <span class="sample-name">Cyberpunk City</span>
+            <span class="shortcut">⌘+5</span>
+          </li>
+          <li class="sample-item" data-preset="empty">
+            <span class="dot blue"></span>
+            <span class="sample-name">Empty Sandbox</span>
+            <span class="shortcut">⌘+6</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Layers / Scene Hierarchy Tree -->
+      <div class="panel-section hierarchy-section flex-grow">
+        <div class="panel-section-header">
+          <span>Layers</span>
+          <i data-lucide="chevron-down"></i>
+        </div>
+        <div class="search-bar-container">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="text" id="hierarchy-search" placeholder="Search">
+        </div>
+        <div class="hierarchy-tree-container">
+          <ul class="hierarchy-tree" id="hierarchy-tree">
+            <!-- Populated dynamically via JS -->
+          </ul>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER VIEWPORT -->
+    <main class="viewport-area">
+      <!-- Top Viewport HUD -->
+      <div class="viewport-hud-top">
+        <div class="camera-info">
+          <span class="camera-title">Camera Ortographic</span>
+          <div class="camera-subtitle">
+            <span id="active-viewport-mode">Modeling</span>
+            <span class="sub-divider">/</span>
+            <span id="active-node-name">Object</span>
+          </div>
+        </div>
+        
+        <div class="viewport-toggles">
+          <div class="dropdown-wrapper">
+            <button class="hud-select-btn" id="btn-camera-dropdown">
+              <span>DG</span>
+              <i data-lucide="chevron-down"></i>
+            </button>
+            <div class="hud-dropdown-menu" id="camera-dropdown-menu">
+              <button class="menu-item active" data-cam="ortho">Orthographic</button>
+              <button class="menu-item" data-cam="persp">Perspective</button>
+            </div>
+          </div>
+          
+          <button id="btn-toggle-grid" class="hud-btn active" title="Toggle Grid">
+            <i data-lucide="grid-3x3"></i>
+          </button>
+          
+          <button id="btn-toggle-view" class="hud-btn" title="Toggle Sidebar Code View">
+            <i data-lucide="code-2"></i>
+          </button>
+          
+          <button id="btn-reset-project" class="hud-btn" title="Reset Project">
+            <i data-lucide="rotate-ccw"></i>
+          </button>
+          
+          <button id="btn-toggle-animation" class="hud-btn active play-btn" title="Play/Pause Animation">
+            <i data-lucide="pause" id="play-pause-icon"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3D Drawing Canvas Wrapper -->
+      <div class="canvas-wrapper" id="canvas-wrapper">
+        <canvas class="zdog-canvas" id="zdog-canvas" width="850" height="650"></canvas>
+        <svg class="zdog-canvas" id="zdog-svg" width="850" height="650" style="display: none;"></svg>
+      </div>
+
+      <!-- Bottom Floating Toolbar (Spline style) -->
+      <div class="viewport-hud-bottom">
+        <div class="floating-toolbar">
+          <!-- Add Mesh Dropdown -->
+          <div class="add-shape-dropdown">
+            <button class="add-circle-btn dropdown-toggle" id="btn-add-mesh" title="Add 3D Mesh">
+              <i data-lucide="box"></i>
+            </button>
+            <div class="dropdown-menu" id="add-mesh-menu">
+              <div class="menu-group">Mesh Primitives</div>
+              <button class="menu-item" data-type="Box"><i data-lucide="box"></i>Box</button>
+              <button class="menu-item" data-type="Cylinder"><i data-lucide="cylinder"></i>Cylinder</button>
+              <button class="menu-item" data-type="Cone"><i data-lucide="cone"></i>Cone</button>
+              <button class="menu-item" data-type="Hemisphere"><i data-lucide="circle-dot"></i>Hemisphere</button>
+            </div>
+          </div>
+
+          <!-- Add 2D Shape Dropdown -->
+          <div class="add-shape-dropdown">
+            <button class="add-circle-btn dropdown-toggle" id="btn-add-2d" title="Add 2D Shape" style="background: var(--bg-control); color: var(--text-muted); border: 1px solid var(--border-color);">
+              <i data-lucide="circle"></i>
+            </button>
+            <div class="dropdown-menu" id="add-2d-menu">
+              <div class="menu-group">2D Shapes</div>
+              <button class="menu-item" data-type="Ellipse"><i data-lucide="circle"></i>Ellipse</button>
+              <button class="menu-item" data-type="Rect"><i data-lucide="square"></i>Rect</button>
+              <button class="menu-item" data-type="RoundedRect"><i data-lucide="smile"></i>RoundedRect</button>
+              <button class="menu-item" data-type="Polygon"><i data-lucide="hexagon"></i>Polygon</button>
+            </div>
+          </div>
+
+          <!-- Add Structure Dropdown -->
+          <div class="add-shape-dropdown">
+            <button class="add-circle-btn dropdown-toggle" id="btn-add-struct" title="Add Structure" style="background: var(--bg-control); color: var(--text-muted); border: 1px solid var(--border-color);">
+              <i data-lucide="folder-plus"></i>
+            </button>
+            <div class="dropdown-menu" id="add-struct-menu">
+              <div class="menu-group">Structure</div>
+              <button class="menu-item" data-type="Anchor"><i data-lucide="target"></i>Anchor</button>
+              <button class="menu-item" data-type="Group"><i data-lucide="folder-plus"></i>Group</button>
+            </div>
+          </div>
+
+          <div class="toolbar-divider"></div>
+
+          <!-- Selection & Drawing Tools -->
+          <button class="tool-btn active" id="tool-select" title="Select Tool">
+            <i data-lucide="mouse-pointer"></i>
+          </button>
+          <button class="tool-btn" id="tool-move" title="Translate Tool">
+            <i data-lucide="move"></i>
+          </button>
+          <button class="tool-btn" id="tool-rotate" title="Rotate Tool">
+            <i data-lucide="rotate-cw"></i>
+          </button>
+          <button class="tool-btn" id="tool-pen" title="Pen Tool (P)">
+            <i data-lucide="pen-tool"></i>
+          </button>
+
+          <div class="toolbar-divider"></div>
+
+          <!-- History / Undo Redo -->
+          <button class="tool-btn" id="btn-undo" title="Undo (Ctrl+Z)" disabled>
+            <i data-lucide="undo"></i>
+          </button>
+          <button class="tool-btn" id="btn-redo" title="Redo (Ctrl+Y)" disabled>
+            <i data-lucide="redo"></i>
+          </button>
+
+          <div class="toolbar-divider"></div>
+
+          <!-- Actions -->
+          <button class="tool-btn" id="btn-clone-node" title="Clone Shape" disabled>
+            <i data-lucide="copy"></i>
+          </button>
+          <button class="tool-btn danger" id="btn-delete-node" title="Delete Shape" disabled>
+            <i data-lucide="trash-2"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Timeline Bar -->
+      <div class="timeline-container" id="timeline-container">
+        <button id="timeline-play-btn" class="tool-btn" title="Play/Pause Timeline">
+          <i data-lucide="play" id="timeline-play-icon"></i>
+        </button>
+        <span class="frame-label" id="frame-display">0 / 120</span>
+        <div class="timeline-slider-wrapper">
+          <input type="range" id="timeline-slider" min="0" max="120" value="0">
+          <div id="keyframe-markers"></div>
+        </div>
+        <button id="btn-add-keyframe" class="tool-btn" title="Add Keyframe" disabled>
+          <i data-lucide="key"></i>
+        </button>
+        <button id="btn-delete-keyframe" class="tool-btn danger" title="Delete Keyframe" disabled>
+          <i data-lucide="trash-2"></i>
+        </button>
+      </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR (PROPERTIES & NATIVE CONTROLS) -->
+    <aside class="sidebar-right">
+      <!-- PROPERTIES CARD -->
+      <div id="properties-panel" class="sidebar-panel-container">
+        
+        <!-- FRAME CARD -->
+        <div class="collapsible-card active">
+          <div class="card-header">
+            <h4>Frame</h4>
+            <i data-lucide="chevron-down" class="chevron"></i>
+          </div>
+          <div class="card-body">
+            <div class="property-row">
+              <label>Size</label>
+              <div class="select-wrapper">
+                <select id="select-frame-size">
+                  <option value="responsive">Responsive</option>
+                  <option value="1080">1920 × 1080</option>
+                  <option value="720">1280 × 720</option>
+                  <option value="square">800 × 800</option>
+                </select>
+                <i data-lucide="chevron-down" class="select-chevron"></i>
+              </div>
+            </div>
+            
+            <div class="property-row">
+              <label>Auto Zoom</label>
+              <div class="segmented-control" id="toggle-auto-zoom">
+                <button class="segment-btn active" data-value="yes">Yes</button>
+                <button class="segment-btn" data-value="no">No</button>
+              </div>
+            </div>
+
+            <div class="property-row">
+              <label>Renderer</label>
+              <div class="segmented-control" id="toggle-renderer-mode">
+                <button class="segment-btn active" data-value="canvas">Canvas</button>
+                <button class="segment-btn" data-value="svg">SVG</button>
+              </div>
+            </div>
+
+            <div class="property-row">
+              <label>Screen UI</label>
+              <div class="select-wrapper">
+                <select>
+                  <option value="none">None</option>
+                  <option value="grid">Grid Only</option>
+                  <option value="all">Full Hud</option>
+                </select>
+                <i data-lucide="chevron-down" class="select-chevron"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MATERIAL CARD -->
+        <div class="collapsible-card active" id="card-material">
+          <div class="card-header">
+            <h4>Material</h4>
+            <i data-lucide="chevron-down" class="chevron"></i>
+          </div>
+          <div class="card-body">
+            <div class="property-row">
+              <label>Color</label>
+              <div class="color-picker-box">
+                <div class="color-preview-wrapper">
+                  <input type="color" id="input-color" value="#3b82f6">
+                </div>
+                <input type="text" id="input-color-text" class="color-hex-text" value="#3B82F6">
+                <span class="opacity-val">100%</span>
+              </div>
+            </div>
+
+            <div class="property-row">
+              <label>Stroke (px)</label>
+              <div class="slider-wrapper">
+                <input type="range" id="input-stroke" min="0.5" max="40" step="0.5" value="8">
+                <span class="value-text" id="stroke-val">8</span>
+              </div>
+            </div>
+
+            <div class="property-row inline-two">
+              <label class="custom-toggle">
+                <input type="checkbox" id="input-fill" checked>
+                <span class="toggle-track"></span>
+                Fill
+              </label>
+              <label class="custom-toggle">
+                <input type="checkbox" id="input-visible" checked>
+                <span class="toggle-track"></span>
+                Visible
+              </label>
+            </div>
+            
+            <div class="property-row inline-two">
+              <label class="custom-toggle">
+                <input type="checkbox" id="input-closed" checked>
+                <span class="toggle-track"></span>
+                Closed
+              </label>
+              <label class="custom-toggle">
+                <input type="checkbox" id="input-backface" checked>
+                <span class="toggle-track"></span>
+                Backface
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- TRANSFORMS CARD -->
+        <div class="collapsible-card active" id="card-transforms">
+          <div class="card-header">
+            <h4>Transform</h4>
+            <i data-lucide="chevron-down" class="chevron"></i>
+          </div>
+          <div class="card-body">
+            <!-- Position -->
+            <div class="transform-section">
+              <span class="section-label">Position</span>
+              <div class="coord-inputs">
+                <div class="coord-field">
+                  <span class="coord-lbl x-lbl">X</span>
+                  <input type="number" id="input-tx" value="0">
+                </div>
+                <div class="coord-field">
+                  <span class="coord-lbl y-lbl">Y</span>
+                  <input type="number" id="input-ty" value="0">
+                </div>
+                <div class="coord-field">
+                  <span class="coord-lbl z-lbl">Z</span>
+                  <input type="number" id="input-tz" value="0">
+                </div>
+              </div>
+              <div class="coord-sliders">
+                <input type="range" id="slider-tx" min="-200" max="200" value="0">
+                <input type="range" id="slider-ty" min="-200" max="200" value="0">
+                <input type="range" id="slider-tz" min="-200" max="200" value="0">
+              </div>
+            </div>
+
+            <!-- Rotation -->
+            <div class="transform-section">
+              <span class="section-label">Rotation</span>
+              <div class="coord-inputs">
+                <div class="coord-field">
+                  <span class="coord-lbl x-lbl">X</span>
+                  <input type="number" id="input-rx" value="0">
+                </div>
+                <div class="coord-field">
+                  <span class="coord-lbl y-lbl">Y</span>
+                  <input type="number" id="input-ry" value="0">
+                </div>
+                <div class="coord-field">
+                  <span class="coord-lbl z-lbl">Z</span>
+                  <input type="number" id="input-rz" value="0">
+                </div>
+              </div>
+              <div class="coord-sliders">
+                <input type="range" id="slider-rx" min="0" max="360" value="0">
+                <input type="range" id="slider-ry" min="0" max="360" value="0">
+                <input type="range" id="slider-rz" min="0" max="360" value="0">
+              </div>
+            </div>
+
+            <!-- Scale -->
+            <div class="transform-section">
+              <span class="section-label">Scale</span>
+              <div class="coord-inputs">
+                <div class="coord-field">
+                  <span class="coord-lbl x-lbl">X</span>
+                  <input type="number" id="input-sx" step="0.1" value="1">
+                </div>
+                <div class="coord-field">
+                  <span class="coord-lbl y-lbl">Y</span>
+                  <input type="number" id="input-sy" step="0.1" value="1">
+                </div>
+                <div class="coord-field">
+                  <span class="coord-lbl z-lbl">Z</span>
+                  <input type="number" id="input-sz" step="0.1" value="1">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ANIMATION CARD -->
+        <div class="collapsible-card active" id="card-animation">
+          <div class="card-header">
+            <h4>Animation Tween</h4>
+            <i data-lucide="chevron-down" class="chevron"></i>
+          </div>
+          <div class="card-body">
+            <div class="property-row">
+              <label>Spin X</label>
+              <div class="slider-wrapper">
+                <input type="range" id="input-spin-x" min="-0.05" max="0.05" step="0.001" value="0">
+                <span class="value-text" id="spin-x-val">0.000</span>
+              </div>
+            </div>
+            <div class="property-row">
+              <label>Spin Y</label>
+              <div class="slider-wrapper">
+                <input type="range" id="input-spin-y" min="-0.05" max="0.05" step="0.001" value="0">
+                <span class="value-text" id="spin-y-val">0.000</span>
+              </div>
+            </div>
+            <div class="property-row">
+              <label>Spin Z</label>
+              <div class="slider-wrapper">
+                <input type="range" id="input-spin-z" min="-0.05" max="0.05" step="0.001" value="0">
+                <span class="value-text" id="spin-z-val">0.000</span>
+              </div>
+            </div>
+            <div class="property-row">
+              <label>Hover Speed</label>
+              <div class="slider-wrapper">
+                <input type="range" id="input-hover-speed" min="0" max="0.1" step="0.002" value="0">
+                <span class="value-text" id="hover-speed-val">0.000</span>
+              </div>
+            </div>
+            <div class="property-row">
+              <label>Hover Amp</label>
+              <div class="slider-wrapper">
+                <input type="range" id="input-hover-amp" min="0" max="40" step="1" value="0">
+                <span class="value-text" id="hover-amp-val">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CAMERA CARD -->
+        <div class="collapsible-card active">
+          <div class="card-header">
+            <h4>Camera</h4>
+            <i data-lucide="chevron-down" class="chevron"></i>
+          </div>
+          <div class="card-body">
+            <div class="property-row">
+              <label>View</label>
+              <div class="select-wrapper">
+                <select id="select-camera-type">
+                  <option value="ortho">Orthographic</option>
+                  <option value="persp">Perspective</option>
+                </select>
+                <i data-lucide="chevron-down" class="select-chevron"></i>
+              </div>
+            </div>
+            
+            <div class="property-row">
+              <label>Global Zoom</label>
+              <div class="slider-wrapper">
+                <input type="range" id="input-global-zoom" min="0.5" max="8" step="0.1" value="3">
+                <span class="value-text" id="zoom-val">3.0</span>
+              </div>
+            </div>
+
+            <div class="property-row">
+              <label>Auto-Spin Y</label>
+              <div class="slider-wrapper">
+                <input type="range" id="input-spin-speed-y" min="-0.05" max="0.05" step="0.001" value="0.005">
+                <span class="value-text" id="spin-y-val">0.005</span>
+              </div>
+            </div>
+
+            <div class="property-row">
+              <label>Environment Bg</label>
+              <div class="color-picker-box">
+                <div class="color-preview-wrapper">
+                  <input type="color" id="input-bg-color" value="#181c24">
+                </div>
+                <input type="text" id="input-bg-color-text" class="color-hex-text" value="#181C24">
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+        <!-- Render actions -->
+        <div class="render-section" style="display: flex; flex-direction: column; gap: 8px; padding: 20px;">
+          <!-- Zd3d Project Save/Open -->
+          <div style="display: flex; gap: 8px; margin-bottom: 2px;">
+            <button class="action-btn outline" id="btn-import-js" style="flex: 1; font-size: 0.74rem; padding: 8px; background: var(--bg-control); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <i data-lucide="import" style="width: 12px; height: 12px;"></i> Import JS
+            </button>
+            <button class="action-btn outline" id="btn-save-zd3d" style="flex: 1; font-size: 0.74rem; padding: 8px; background: var(--bg-control); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <i data-lucide="save" style="width: 12px; height: 12px;"></i> Save .zd3d
+            </button>
+            <button class="action-btn outline" id="btn-load-zd3d" style="flex: 1; font-size: 0.74rem; padding: 8px; background: var(--bg-control); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <i data-lucide="folder-open" style="width: 12px; height: 12px;"></i> Open .zd3d
+            </button>
+            <input type="file" id="input-file-zd3d" accept=".zd3d" style="display: none;">
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button class="action-btn outline" id="btn-export-svg" style="flex: 1; font-size: 0.74rem; padding: 8px; background: var(--bg-control); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <i data-lucide="file-type-2" style="width: 12px; height: 12px;"></i> Export SVG
+            </button>
+            <button class="action-btn outline" id="btn-export-png" style="flex: 1; font-size: 0.74rem; padding: 8px; background: var(--bg-control); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <i data-lucide="image" style="width: 12px; height: 12px;"></i> Export PNG
+            </button>
+          </div>
+          <button class="render-btn" id="btn-render-action">
+            <span>+ Render</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SIDEBAR CODE GENERATOR (Hidden, toggles via button) -->
+      <div id="code-panel" class="sidebar-panel-container hide">
+        <div class="code-card">
+          <div class="code-card-header">
+            <span>Zdog JavaScript Code</span>
+            <div style="display: flex; gap: 6px;">
+              <button id="btn-copy-code" class="copy-btn">
+                <i data-lucide="copy"></i> Copy
+              </button>
+              <button id="btn-download-code" class="copy-btn">
+                <i data-lucide="download"></i> Download
+              </button>
+            </div>
+          </div>
+          <div class="code-viewer">
+            <pre><code id="js-code-output"></code></pre>
+          </div>
+        </div>
+        <div class="code-instructions">
+          <h5>Standalone Integration</h5>
+          <p>Paste this script in your web page to reproduce your illustration.</p>
+          <pre class="html-snippet"><code>&lt;script src="https://unpkg.com/zdog@1/dist/zdog.dist.min.js"&gt;&lt;/script&gt;</code></pre>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Import Code Modal -->
+  <div id="import-modal-overlay" class="modal-overlay hide">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3><i data-lucide="import"></i> Import Zdog Code</h3>
+        <button id="btn-close-import-modal" class="modal-close-btn" title="Close Modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-description">Paste raw Zdog JavaScript code from CodePen or standalone scripts. The scene graph will be generated and compiled, allowing you to edit and animate your creation.</p>
+        <textarea id="import-code-input" placeholder="// Paste your Zdog code here...
+// Example:
+// var box = new Zdog.Box({
+//   addTo: illo,
+//   width: 20,
+//   height: 20,
+//   depth: 20,
+//   stroke: 8,
+//   color: '#C25'
+// });" spellcheck="false"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-cancel-import" class="modal-btn secondary">Cancel</button>
+        <button id="btn-submit-import" class="modal-btn primary">Compile &amp; Import</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dynamic JS Engine -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>

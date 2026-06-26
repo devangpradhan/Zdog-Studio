@@ -1,0 +1,20 @@
+[package]
+name = "your-username/zdog-studio"
+version = "0.1.0"
+description = "Zdog Studio - Premium 3D Editor"
+license = "MIT"
+
+[[module]]
+name = "static-web-server"
+source = "wasmer/static-web-server:1"
+
+[[command]]
+name = "webserver"
+module = "static-web-server"
+runner = "https://webc.org/runner/wasi"
+
+[commands.webserver.annotations]
+wasi = { atom = "static-web-server", volumes = ["public:."] }
+
+[fs]
+public = "."

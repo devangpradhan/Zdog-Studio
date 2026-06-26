@@ -1455,6 +1455,15 @@ function updateSelectedNodeProp(prop, value) {
   }
 }
 
+function getRandomColor() {
+  const colors = [
+    '#FF5C00', '#3B82F6', '#10B981', '#EF4444', '#8B5CF6', 
+    '#EC4899', '#EAB308', '#06B6D4', '#14B8A6', '#F43F5E', 
+    '#A855F7', '#6366F1', '#F59E0B', '#64748B'
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
 // ==========================================
 // SCENE MODIFICATIONS (ADD, DELETE, CLONE)
 // ==========================================
@@ -1485,7 +1494,7 @@ function addShapeToScene(type) {
   };
 
   if (type !== 'Anchor' && type !== 'Group') {
-    newNode.color = '#ff5c00';
+    newNode.color = getRandomColor();
     newNode.stroke = 8;
     newNode.fill = true;
     newNode.visible = true;
@@ -2151,7 +2160,7 @@ function finishPenDrawing(shouldClose) {
     rotate: { x: 0, y: 0, z: 0 },
     scale: { x: 1, y: 1, z: 1 },
     path: [...penPoints],
-    color: '#ff5c00',
+    color: getRandomColor(),
     stroke: 8,
     fill: false, // Default to outline for custom paths
     visible: true,

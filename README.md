@@ -1,6 +1,10 @@
-# Zdog Studio — Premium 3D Editor
+# Zdog Studio — Pseudo 3D Editor For Zdog
+
+Visit [Zdog 3D Studio](https://zdogstudio.wasmer.app/)
+
 
 ![Zdog Studio Demo](lib/zdog3dstudio.gif)
+
 
 Zdog Studio is a powerful, interactive, web-based 3D modeling and animation editor built on top of the popular **Zdog** pseudo-3D engine. It provides a visual interface for creating 3D meshes, 2D shapes, custom paths, keyframe animations, and exporting production-ready JavaScript code, SVG, or PNG scenes.
 
